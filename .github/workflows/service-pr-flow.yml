@@ -22,11 +22,8 @@ on:
       aws_account_id:
         description: 'AWS_ACCOUNT_ID'
         required: false
-      aws_access_key_id:
-        description: 'AWS_ACCESS_KEY_ID'
-        required: false
-      aws_secret_access_key_id:
-        description: 'AWS_SECRET_ACCESS_KEY'
+      aws_role_to_assume_dev:
+        description: 'AWS_ROLE_TO_ASSUME_DEV'
         required: false
       slack_bot_token:
         description: 'SLACK_BOT_TOKEN'
@@ -51,8 +48,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.aws_access_key_id }}
-          aws-secret-access-key: ${{ secrets.aws_secret_access_key_id }}
+          role-to-assume: ${{ secrets.aws_role_to_assume_dev }}
           aws-region: eu-central-1
 
       - name: Initialize variables
