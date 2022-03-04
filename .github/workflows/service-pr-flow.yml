@@ -1,0 +1,97 @@
+# Controls when the workflow will run
+on:
+  workflow_call:
+    inputs:
+      build_command:
+        required: true
+        type: string
+      itest_command:
+        required: false
+        type: string
+      test_results_files:
+        required: true
+        type: string
+      spotbugs_results_files:
+        required: false
+        type: string
+      slack_channel_id:
+        required: false
+        type: string
+
+    secrets:
+      aws_account_id:
+        description: 'AWS_ACCOUNT_ID'
+        required: false
+      aws_access_key_id:
+        description: 'AWS_ACCESS_KEY_ID'
+        required: false
+      aws_secret_access_key_id:
+        description: 'AWS_SECRET_ACCESS_KEY'
+        required: false
+      slack_bot_token:
+        description: 'SLACK_BOT_TOKEN'
+        required: false
+      slack_channel_id:
+        required: false
+
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.aws_access_key_id }}
+          aws-secret-access-key: ${{ secrets.aws_secret_access_key_id }}
+          aws-region: eu-central-1
+
+      - name: Initialize variables
+        id: vars
+        run: |
+          token=$(aws codeartifact get-authorization-token --domain meawallet --domain-owner ${{ secrets.aws_account_id }} --query authorizationToken --output text)
+          echo "::add-mask::$token"
+          echo "::set-output name=codeartifact_auth_token::$token"
+          echo "::set-output name=run_url::https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: Build project
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: ${{ inputs.build_command }} -PmavenUser=aws -PmavenPassword=${{ steps.vars.outputs.codeartifact_auth_token }}
+
+      - name: Publish spotbugs results
+        uses: jwgmeligmeyling/spotbugs-github-action@master
+        if: ${{ failure() && inputs.spotbugs_results_files != 0 }}
+        with:
+          path: ${{ inputs.spotbugs_results_files }}
+
+      - name: Run integration tests
+        uses: gradle/gradle-build-action@v2
+        if: ${{ inputs.itest_command != 0 }}
+        with:
+          arguments: ${{ inputs.itest_command }} -PmavenUser=aws -PmavenPassword=${{ steps.vars.outputs.codeartifact_auth_token }}
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: ${{ inputs.test_results_files }}
+
+      - name: Post failure to a Slack channel
+        id: slack
+        if: ${{ failure() && inputs.slack_channel_id != 0 }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.slack_bot_token }}
+        uses: slackapi/slack-github-action@v1.18.0
+        with:
+          channel-id: ${{ inputs.slack_channel_id }}  # Slack channel id or user id to post message. https://api.slack.com/methods/chat.postMessage#channels
+          slack-message: Build failed ${{ steps.vars.outputs.run_url }}
