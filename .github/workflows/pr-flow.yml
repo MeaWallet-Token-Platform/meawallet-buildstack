@@ -19,14 +19,14 @@ on:
         type: string
 
     secrets:
-      aws_account_id:
-        description: 'AWS_ACCOUNT_ID'
+      aws_ca_domain:
+        description: 'AWS_CA_DOMAIN'
         required: false
-      aws_access_key_id:
-        description: 'AWS_ACCESS_KEY_ID'
+      aws_ca_owner_id:
+        description: 'AWS_CA_OWNER_ID'
         required: false
-      aws_secret_access_key_id:
-        description: 'AWS_SECRET_ACCESS_KEY'
+      aws_role_to_assume_dev:
+        description: 'AWS_ROLE_TO_ASSUME_DEV'
         required: false
       slack_bot_token:
         description: 'SLACK_BOT_TOKEN'
@@ -51,14 +51,13 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.aws_access_key_id }}
-          aws-secret-access-key: ${{ secrets.aws_secret_access_key_id }}
+          role-to-assume: ${{ secrets.aws_role_to_assume_dev }}
           aws-region: eu-central-1
 
       - name: Initialize variables
         id: vars
         run: |
-          token=$(aws codeartifact get-authorization-token --domain meawallet --domain-owner ${{ secrets.aws_account_id }} --query authorizationToken --output text)
+          token=$(aws codeartifact get-authorization-token --domain ${{ secrets.aws_ca_domain }} --domain-owner ${{ secrets.aws_ca_owner_id }} --query authorizationToken --output text)
           echo "::add-mask::$token"
           echo "::set-output name=codeartifact_auth_token::$token"
           echo "::set-output name=run_url::https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
@@ -93,5 +92,5 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.slack_bot_token }}
         uses: slackapi/slack-github-action@v1.18.0
         with:
-          channel-id: ${{ inputs.slack_channel_id }}  # Slack channel id or user id to post message. https://api.slack.com/methods/chat.postMessage#channels
+          channel-id: ${{ inputs.slack_channel_id }}
           slack-message: Build failed ${{ steps.vars.outputs.run_url }}
