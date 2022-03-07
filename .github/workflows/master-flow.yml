@@ -73,7 +73,7 @@ jobs:
       - name: Automated version bump
         uses: paulhatch/semantic-version@v4.0.3
         with: 
-          tag-prefix: 'v'
+          tag_prefix: 'v'
 
       - name: Building project
         uses: gradle/gradle-build-action@v2
