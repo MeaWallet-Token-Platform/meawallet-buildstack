@@ -71,10 +71,8 @@ jobs:
           echo "::set-output name=run_url::https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
       - name: Automated version bump
-        uses: phips28/gh-action-bump-version@master
-        if: ${{ success() }}
+        uses: paulhatch/semantic-version@v4.0.3
         with: 
-          commit-message: 'Bumps version to {{version}}'
           tag-prefix: 'v'
 
       - name: Building project
