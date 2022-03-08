@@ -46,12 +46,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup JAVA 
+      - name: Setup Java
         uses: actions/setup-java@v1
         with:
           java-version: 11
 
-      - name: Configure AWS Credentials
+      - name: Setup AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: ${{ secrets.aws_role_to_assume }}
