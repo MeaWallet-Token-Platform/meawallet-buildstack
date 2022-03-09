@@ -85,7 +85,7 @@ jobs:
       - name: Push tags to origin
         if: ${{ success() && inputs.build_command != 0 && inputs.artifacts_publish_command != 0 }}
         run: |
-          git push origin ${{ steps.version.outputs.version }}
+          git push origin ${{ steps.version.outputs.version_tag }}
 
       - name: Post to a Slack channel
         id: slack
