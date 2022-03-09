@@ -82,9 +82,10 @@ jobs:
         with:
           arguments: ${{ inputs.artifacts_publish_command }} -PreleaseVersion=${{ steps.version.outputs.version }} -PmavenUser=aws -PmavenPassword=${{ steps.vars.outputs.codeartifact_auth_token }}
 
-      - name: Push tags to origin
+      - name: Create and push tags to origin
         if: ${{ success() && inputs.build_command != 0 && inputs.artifacts_publish_command != 0 }}
         run: |
+          git tag ${{ steps.version.outputs.version_tag }}
           git push origin ${{ steps.version.outputs.version_tag }}
 
       - name: Post to a Slack channel
