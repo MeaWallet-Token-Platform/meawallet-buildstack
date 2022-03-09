@@ -67,11 +67,6 @@ jobs:
           echo "::set-output name=codeartifact_auth_token::$codeartifact_token"
           echo "::set-output name=run_url::https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-      - name: Increment version
-        uses: paulhatch/semantic-version@v4
-        with: 
-          tag_prefix: 'v'
-
       - name: Building project
         uses: gradle/gradle-build-action@v2
         with:
