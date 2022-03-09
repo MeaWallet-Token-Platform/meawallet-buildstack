@@ -70,6 +70,8 @@ jobs:
       - name: Increment semantic version
         id: version
         uses: paulhatch/semantic-version@v4
+          with: 
+            bump_each_commit: true
 
       - name: Building project
         uses: gradle/gradle-build-action@v2
