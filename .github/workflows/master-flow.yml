@@ -74,13 +74,13 @@ jobs:
       - name: Building project
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: ${{ inputs.build_command }} -Prelease=true -PreleaseVersion=${{ steps.version.outputs.version }} -PmavenUser=aws -PmavenPassword=${{ steps.vars.outputs.codeartifact_auth_token }}
+          arguments: ${{ inputs.build_command }} -PreleaseVersion=${{ steps.version.outputs.version }} -PmavenUser=aws -PmavenPassword=${{ steps.vars.outputs.codeartifact_auth_token }}
 
       - name: Publish Artifacts
         uses: gradle/gradle-build-action@v2
         if: ${{ success() && inputs.artifacts_publish_command != 0 }}
         with:
-          arguments: ${{ inputs.artifacts_publish_command }} -PmavenUser=aws -PmavenPassword=${{ steps.vars.outputs.codeartifact_auth_token }}
+          arguments: ${{ inputs.artifacts_publish_command }} -PreleaseVersion=${{ steps.version.outputs.version }} -PmavenUser=aws -PmavenPassword=${{ steps.vars.outputs.codeartifact_auth_token }}
 
       - name: Post to a Slack channel
         id: slack
