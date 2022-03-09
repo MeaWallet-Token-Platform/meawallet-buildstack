@@ -70,8 +70,6 @@ jobs:
       - name: Increment semantic version
         id: version
         uses: paulhatch/semantic-version@v4
-        with: 
-          bump_each_commit: true
 
       - name: Building project
         uses: gradle/gradle-build-action@v2
@@ -83,6 +81,11 @@ jobs:
         if: ${{ success() && inputs.artifacts_publish_command != 0 }}
         with:
           arguments: ${{ inputs.artifacts_publish_command }} -PreleaseVersion=${{ steps.version.outputs.version }} -PmavenUser=aws -PmavenPassword=${{ steps.vars.outputs.codeartifact_auth_token }}
+
+      - name: Push tags to origin
+        if: ${{ success() && inputs.build_command != 0 && inputs.artifacts_publish_command != 0 }}
+        run: |
+          git push origin ${{ steps.version.outputs.version }}
 
       - name: Post to a Slack channel
         id: slack
