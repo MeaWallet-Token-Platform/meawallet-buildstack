@@ -68,7 +68,7 @@ jobs:
       - name: Build project
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: ${{ inputs.build_command }} -PcodeartifactUsername=aws -PcodeartifactTokenQuery=`echo ${{ steps.vars.outputs.codeartifact_auth_token }}`
+          arguments: ${{ inputs.build_command }} -PcodeartifactUsername=aws -PcodeartifactTokenQuery="echo ${{ steps.vars.outputs.codeartifact_auth_token }}"
 
       - name: Publish spotbugs results
         uses: jwgmeligmeyling/spotbugs-github-action@master
