@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -60,15 +60,14 @@ jobs:
       - name: Initialize variables
         id: vars
         run: |
-          token=$(aws codeartifact get-authorization-token --domain ${{ secrets.aws_ca_domain }} --domain-owner ${{ secrets.aws_ca_owner_id }} --query authorizationToken --output text)
-          echo "::add-mask::$token"
-          echo "::set-output name=codeartifact_auth_token::$token"
           echo "::set-output name=run_url::https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env: 
+          codeartifactTokenQuery: aws codeartifact get-authorization-token --domain ${{ secrets.aws_ca_domain }} --domain-owner ${{ secrets.aws_ca_owner_id }} --query authorizationToken --output text 
 
       - name: Build project
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: ${{ inputs.build_command }} -PmavenUser=aws -PmavenPassword=${{ steps.vars.outputs.codeartifact_auth_token }}
+          arguments: ${{ inputs.build_command }} -PcodeartifactUsername=aws -PcodeartifactTokenQuery=${{ env.codeartifactTokenQuery }}
 
       - name: Publish spotbugs results
         uses: jwgmeligmeyling/spotbugs-github-action@master
