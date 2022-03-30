@@ -117,6 +117,9 @@ jobs:
           with:
             context: .
             push: true
+            build-args: |
+              APP_NAME=${{ inputs.service_name }}
+              JVM_OPTS="-Xms1024m -Xmx2048m"
             tags: ${{ inputs.service_name }}:${{ steps.version.outputs.version_tag }},${{ inputs.service_name }}:latest
 
       - name: Post to a Slack channel
