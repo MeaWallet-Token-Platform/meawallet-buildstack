@@ -8,7 +8,13 @@ on:
       artifacts_publish_command:
         required: false
         type: string
-      container_build_command:
+      registry_name:
+        required: false
+        type: string
+      service_name: 
+        required: false
+        type: string
+      deploy_repo:
         required: false
         type: string
       slack_channel_id:
@@ -30,6 +36,12 @@ on:
         required: false
       slack_channel_id:
         description: 'SLACK_CHANNEL_ID'
+        required: false
+      dockerhub_username:
+        description: 'DOCKERHUB_USERNAME'
+        required: false
+      dockerhub_token: 
+        description: 'DOCKERHUB_TOKEN'
         required: false
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -54,17 +66,21 @@ jobs:
           role-to-assume: ${{ secrets.aws_role_to_assume }}
           aws-region: eu-central-1
 
-      - name: Login to Amazon ECR
-        if: ${{ inputs.container_build_command != 0 }}
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+      - name: Setup Docker Buildx
+        if: ${{ inputs.registry_name !=0 }}
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to DockerHub
+        if: ${{ inputs.registry_name != 0 }}
+        id: login-dockerhub
+        uses: docker/login-action@v1 
+          with: 
+            username: ${{ secrets.dockerhub_username }}
+            password: ${{ secrets.dockerhub_token }}
 
       - name: Initialize variables
         id: vars
         run: |
-          codeartifact_token=$(aws codeartifact get-authorization-token --domain ${{ secrets.aws_ca_domain }} --domain-owner ${{ secrets.aws_ca_owner_id }} --query authorizationToken --output text)
-          echo "::add-mask::$codeartifact_token"
-          echo "::set-output name=codeartifact_auth_token::$codeartifact_token"
           echo "::set-output name=run_url::https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
       - name: Increment semantic version
@@ -74,19 +90,34 @@ jobs:
       - name: Building project
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: ${{ inputs.build_command }} -PreleaseVersion=${{ steps.version.outputs.version }} -PmavenUser=aws -PmavenPassword=${{ steps.vars.outputs.codeartifact_auth_token }}
+          arguments: ${{ inputs.build_command }} -PreleaseVersion=${{ steps.version.outputs.version }}
 
       - name: Publish Artifacts
         uses: gradle/gradle-build-action@v2
         if: ${{ success() && inputs.artifacts_publish_command != 0 }}
         with:
-          arguments: ${{ inputs.artifacts_publish_command }} -PreleaseVersion=${{ steps.version.outputs.version }} -PmavenUser=aws -PmavenPassword=${{ steps.vars.outputs.codeartifact_auth_token }}
+          arguments: ${{ inputs.artifacts_publish_command }} -PreleaseVersion=${{ steps.version.outputs.version }}
 
       - name: Create and push tags to origin
         if: ${{ success() && inputs.build_command != 0 && inputs.artifacts_publish_command != 0 }}
         run: |
           git tag ${{ steps.version.outputs.version_tag }}
           git push origin ${{ steps.version.outputs.version_tag }}
+
+      - name: Login to Amazon ECR
+        if: ${{ inputs.registry_name != 0 }}
+        id: login-ecr
+        uses: docker/login-action@v1
+          with: 
+            registry: ${{ inputs.registry_name }}
+
+      - name: Build and push image to registry
+        if: ${{ success() && inputs.container_build_command != 0 }}
+        uses: docker/build-push-action@v2
+          with:
+            context: .
+            push: true
+            tags: ${{ inputs.service_name }}:${{ steps.version.outputs.version_tag }},${{ inputs.service_name }}:latest
 
       - name: Post to a Slack channel
         id: slack
