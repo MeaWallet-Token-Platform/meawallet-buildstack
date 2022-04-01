@@ -14,6 +14,9 @@ on:
       service_name: 
         required: false
         type: string
+      app_name:
+        required: false
+        type: string
       deploy_repo:
         required: false
         type: string
@@ -99,7 +102,7 @@ jobs:
           arguments: ${{ inputs.artifacts_publish_command }} -PreleaseVersion=${{ steps.version.outputs.version }}
 
       - name: Create and push tags to origin
-        if: ${{ success() && inputs.build_command != 0 && inputs.artifacts_publish_command != 0 }}
+        if: ${{ success() && inputs.build_command != 0 }}
         run: |
           git tag ${{ steps.version.outputs.version_tag }}
           git push origin ${{ steps.version.outputs.version_tag }}
@@ -112,11 +115,14 @@ jobs:
             registry: ${{ inputs.registry_name }}
 
       - name: Build and push image to registry
-        if: ${{ success() && inputs.container_build_command != 0 }}
+        if: ${{ success() && inputs.registry_name != 0 }}
         uses: docker/build-push-action@v2
           with:
-            context: .
+            context: ./
             push: true
+            build-args: |
+              APP_NAME=${{ inputs.app_name }}
+              JVM_OPTS="-Xms1024m -Xmx2048m"
             tags: ${{ inputs.service_name }}:${{ steps.version.outputs.version_tag }},${{ inputs.service_name }}:latest
 
       - name: Post to a Slack channel
