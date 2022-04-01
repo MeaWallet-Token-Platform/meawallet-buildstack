@@ -1,3 +1,5 @@
+name: reusable-master-flow
+
 # Controls when the workflow will run
 on:
   workflow_call:
@@ -45,6 +47,9 @@ on:
         required: false
       dockerhub_token: 
         description: 'DOCKERHUB_TOKEN'
+        required: false
+      github_token:
+        description: 'GITHUB_TOKEN'
         required: false
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -124,6 +129,15 @@ jobs:
         run: |
           git tag ${{ steps.version.outputs.version_tag }}
           git push origin ${{ steps.version.outputs.version_tag }}
+
+      - name: Dispatch deployment to the development 
+        if: ${{ success() && inputs.service_name != 0 && inputs.deploy_repo != 0 }}
+        uses: peter-evans/repository-dispatch@v2
+        with: 
+          token: ${{ secrets.github_token }}
+          event-type: development-deployment
+          client-payload: '{"service_name": "${{ inputs.service_name }}", "image_version": "${{ steps.version.outputs.version_tag }}"}'
+          repository: ${{ inputs.deploy_repo }} 
 
       - name: Post to a Slack channel
         id: slack
