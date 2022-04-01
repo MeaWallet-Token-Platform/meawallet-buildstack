@@ -101,12 +101,6 @@ jobs:
         with:
           arguments: ${{ inputs.artifacts_publish_command }} -PreleaseVersion=${{ steps.version.outputs.version }}
 
-      - name: Create and push tags to origin
-        if: ${{ success() && inputs.build_command != 0 }}
-        run: |
-          git tag ${{ steps.version.outputs.version_tag }}
-          git push origin ${{ steps.version.outputs.version_tag }}
-
       - name: Login to Amazon ECR
         if: ${{ inputs.registry_name != 0 }}
         id: login-ecr
@@ -123,7 +117,13 @@ jobs:
           build-args: |
             APP_NAME=${{ inputs.app_name }}
             JVM_OPTS="-Xms1024m -Xmx2048m"
-          tags: ${{ inputs.service_name }}:${{ steps.version.outputs.version_tag }},${{ inputs.service_name }}:latest
+          tags: ${{ inputs.registry_name }}/${{ inputs.service_name }}:${{ steps.version.outputs.version_tag }},${{ inputs.registry_name }}/${{ inputs.service_name }}:latest
+
+      - name: Create and push tags to origin
+        if: ${{ success() && inputs.build_command != 0 }}
+        run: |
+          git tag ${{ steps.version.outputs.version_tag }}
+          git push origin ${{ steps.version.outputs.version_tag }}
 
       - name: Post to a Slack channel
         id: slack
