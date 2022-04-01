@@ -48,7 +48,7 @@ on:
       dockerhub_token: 
         description: 'DOCKERHUB_TOKEN'
         required: false
-      github_token:
+      github_access_token:
         description: 'GITHUB_TOKEN'
         required: false
 
@@ -134,7 +134,7 @@ jobs:
         if: ${{ success() && inputs.service_name != 0 && inputs.deploy_repo != 0 }}
         uses: peter-evans/repository-dispatch@v2
         with: 
-          token: ${{ secrets.github_token }}
+          token: ${{ secrets.github_access_token }}
           event-type: development-deployment
           client-payload: '{"service_name": "${{ inputs.service_name }}", "image_version": "${{ steps.version.outputs.version_tag }}"}'
           repository: ${{ inputs.deploy_repo }} 
