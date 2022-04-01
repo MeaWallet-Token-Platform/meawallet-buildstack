@@ -77,9 +77,9 @@ jobs:
         if: ${{ inputs.registry_name != 0 }}
         id: login-dockerhub
         uses: docker/login-action@v1 
-          with: 
-            username: ${{ secrets.dockerhub_username }}
-            password: ${{ secrets.dockerhub_token }}
+        with: 
+          username: ${{ secrets.dockerhub_username }}
+          password: ${{ secrets.dockerhub_token }}
 
       - name: Initialize variables
         id: vars
@@ -111,19 +111,19 @@ jobs:
         if: ${{ inputs.registry_name != 0 }}
         id: login-ecr
         uses: docker/login-action@v1
-          with: 
-            registry: ${{ inputs.registry_name }}
+        with: 
+          registry: ${{ inputs.registry_name }}
 
       - name: Build and push image to registry
         if: ${{ success() && inputs.registry_name != 0 }}
         uses: docker/build-push-action@v2
-          with:
-            context: ./
-            push: true
-            build-args: |
-              APP_NAME=${{ inputs.app_name }}
-              JVM_OPTS="-Xms1024m -Xmx2048m"
-            tags: ${{ inputs.service_name }}:${{ steps.version.outputs.version_tag }},${{ inputs.service_name }}:latest
+        with:
+          context: ./
+          push: true
+          build-args: |
+            APP_NAME=${{ inputs.app_name }}
+            JVM_OPTS="-Xms1024m -Xmx2048m"
+          tags: ${{ inputs.service_name }}:${{ steps.version.outputs.version_tag }},${{ inputs.service_name }}:latest
 
       - name: Post to a Slack channel
         id: slack
