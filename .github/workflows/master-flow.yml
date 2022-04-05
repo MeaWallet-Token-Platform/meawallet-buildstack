@@ -121,7 +121,8 @@ jobs:
           push: true
           build-args: |
             APP_NAME=${{ inputs.app_name }}
-            JVM_OPTS="-Xms1024m -Xmx2048m"
+            JVM_MIN=-Xms1024m
+            JVM_MAX=-Xmx2048m
           tags: ${{ inputs.registry_name }}/${{ inputs.service_name }}:${{ steps.version.outputs.version_tag }},${{ inputs.registry_name }}/${{ inputs.service_name }}:latest
 
       - name: Create and push tags to origin
@@ -130,14 +131,14 @@ jobs:
           git tag ${{ steps.version.outputs.version_tag }}
           git push origin ${{ steps.version.outputs.version_tag }}
 
-      # - name: Dispatch deployment to the development 
-      #   if: ${{ success() && inputs.service_name != 0 && inputs.deploy_repo != 0 }}
-      #   uses: peter-evans/repository-dispatch@v2
-      #   with: 
-      #     token: ${{ secrets.github_access_token }}
-      #     event-type: development-deployment
-      #     client-payload: '{"service_name": "${{ inputs.service_name }}", "image_version": "${{ steps.version.outputs.version_tag }}"}'
-      #     repository: ${{ inputs.deploy_repo }} 
+      - name: Dispatch deployment to the development 
+        if: ${{ success() && inputs.service_name != 0 && inputs.deploy_repo != 0 }}
+        uses: peter-evans/repository-dispatch@v2
+        with: 
+          token: ${{ secrets.github_access_token }}
+          event-type: dev-release
+          client-payload: '{"service_name": "${{ inputs.service_name }}", "image_version": "${{ steps.version.outputs.version_tag }}"}'
+          repository: ${{ inputs.deploy_repo }} 
 
       - name: Post to a Slack channel
         id: slack
