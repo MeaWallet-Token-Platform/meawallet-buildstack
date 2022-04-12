@@ -48,8 +48,8 @@ on:
       dockerhub_token: 
         description: 'DOCKERHUB_TOKEN'
         required: false
-      ci_token:
-        description: 'CI_TOKEN'
+      cd_token:
+        description: 'CD_TOKEN'
         required: false
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -135,7 +135,7 @@ jobs:
         if: ${{ success() && inputs.service_name != 0 && inputs.deploy_repo != 0 }}
         uses: peter-evans/repository-dispatch@v2
         with: 
-          token: ${{ secrets.ci_token }}
+          token: ${{ secrets.cd_token }}
           event-type: dev-release
           client-payload: '{"service_name": "${{ inputs.service_name }}", "image_version": "${{ steps.version.outputs.version_tag }}"}'
           repository: ${{ inputs.deploy_repo }} 
