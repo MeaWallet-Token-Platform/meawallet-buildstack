@@ -36,8 +36,8 @@ on:
       aws_role_to_assume:
         description: 'AWS_ROLE_TO_ASSUME'
         required: false
-      slack_bot_token:
-        description: 'SLACK_BOT_TOKEN'
+      slack_webhook_url:
+        description: 'SLACK_WEBHOOK_URL'
         required: false
       slack_channel_id:
         description: 'SLACK_CHANNEL_ID'
@@ -140,13 +140,15 @@ jobs:
           client-payload: '{"service_name": "${{ inputs.service_name }}", "image_version": "${{ steps.version.outputs.version_tag }}"}'
           repository: ${{ inputs.deploy_repo }} 
 
-      - name: Post to a Slack channel
+      - name: Post to Slack channel
+        if: ${{ failure() }}
         id: slack
-        if: ${{ failure() && inputs.slack_channel_id != 0 }}
         env:
-          SLACK_BOT_TOKEN: ${{ secrets.slack_bot_token }}
+          SLACK_WEBHOOK_URL: ${{ secrets.slack_webhook_url }}
         uses: slackapi/slack-github-action@v1.18.0
-        with:
-          channel-id: ${{ inputs.slack_channel_id }}
-          slack-message: Build ${{ github.ref_name }} has failed ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
+        with: 
+          payload: |
+            {
+              "status": "Build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
+              "author": "Pull request author: ${{ github.event.pull_request.user.login }}"
+            }
