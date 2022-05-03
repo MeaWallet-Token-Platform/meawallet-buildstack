@@ -35,6 +35,12 @@ on:
         required: false
       slack_channel_id:
         required: false
+      sonar_token:
+        descripton: 'SONAR_TOKEN'
+        required: false
+      sonar_host_url:
+        description: 'SONAR_HOST_URL'
+        required: false
 
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -74,6 +80,12 @@ jobs:
         if: ${{ failure() && inputs.spotbugs_results_files != 0 }}
         with:
           path: ${{ inputs.spotbugs_results_files }}
+
+      - name: Run SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.sonar_token }}
+          SONAR_HOST_URL: ${{ secrets.sonar_host_url }}
 
       - name: Run integration tests
         uses: gradle/gradle-build-action@v2
