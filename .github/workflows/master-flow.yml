@@ -22,6 +22,9 @@ on:
       deploy_repo:
         required: false
         type: string
+      deploy_namespace:
+        required: false
+        type: string
       slack_channel_id:
         required: false
         type: string
@@ -146,7 +149,7 @@ jobs:
         with: 
           token: ${{ secrets.cd_token }}
           event-type: dev-release
-          client-payload: '{"service_name": "${{ inputs.service_name }}", "image_version": "${{ steps.version.outputs.version_tag }}"}'
+          client-payload: '{"service_name": "${{ inputs.service_name }}", "image_version": "${{ steps.version.outputs.version_tag }}", "deploy_namespace": "${{ inputs.deploy_namespace }}"}'
           repository: ${{ inputs.deploy_repo }} 
 
       - name: Post to Slack channel
