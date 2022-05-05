@@ -36,7 +36,7 @@ on:
       slack_channel_id:
         required: false
       sonar_token:
-        descripton: 'SONAR_TOKEN'
+        description: 'SONAR_TOKEN'
         required: false
       sonar_host_url:
         description: 'SONAR_HOST_URL'
