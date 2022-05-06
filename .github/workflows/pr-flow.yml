@@ -61,7 +61,7 @@ jobs:
 
       - name: Cache SonarQube packages
         uses: actions/cache@v3
-        if: ${{ inputs.sonar_host_url != 0 }}
+        if: ${{ secret.sonar_token != 0 }}
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
@@ -100,7 +100,7 @@ jobs:
 
       - name: Run SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
-        if: ${{ inputs.sonar_host_url != 0 }}
+        if: ${{ secret.sonar_token != 0 }}
         env:
           SONAR_TOKEN: ${{ secrets.sonar_token }}
           SONAR_HOST_URL: ${{ secrets.sonar_host_url }}
