@@ -97,11 +97,11 @@ jobs:
         with:
           path: ${{ inputs.spotbugs_results_files }}
 
-      - name: Run SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.sonar_token }}
-          SONAR_HOST_URL: ${{ secrets.sonar_host_url }}
+#      - name: Run SonarQube Scan
+#        uses: sonarsource/sonarqube-scan-action@master
+#        env:
+#          SONAR_TOKEN: ${{ secrets.sonar_token }}
+#          SONAR_HOST_URL: ${{ secrets.sonar_host_url }}
 
       - name: Run integration tests
         uses: gradle/gradle-build-action@v2
