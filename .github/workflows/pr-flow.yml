@@ -94,16 +94,3 @@ jobs:
         if: always()
         with:
           files: ${{ inputs.test_results_files }}
-
-      - name: Post to Slack channel
-        if: ${{ failure() }}
-        id: slack
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.slack_webhook_url }}
-        uses: slackapi/slack-github-action@v1.18.0
-        with: 
-          payload: |
-            {
-              "status": "Build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
-              "author": "Pull request author: ${{ github.event.pull_request.user.login }}"
-            }
