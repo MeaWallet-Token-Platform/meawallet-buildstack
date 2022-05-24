@@ -153,7 +153,6 @@ jobs:
           repository: ${{ inputs.deploy_repo }} 
 
       - name: Post to Slack channel
-        if: ${{ failure() }}
         id: slack
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.slack_webhook_url }}
@@ -161,6 +160,6 @@ jobs:
         with: 
           payload: |
             {
-              "status": "Build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
+              "status": "Build result (CI): ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
               "author": "Pull request author: ${{ github.event.pull_request.user.login }}"
             }
