@@ -160,6 +160,6 @@ jobs:
         with: 
           payload: |
             {
-              "status": "Build result (CI): ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
-              "author": "Pull request author: ${{ github.event.pull_request.user.login }}"
+              "status": "${{ inputs.service_name }}:${{ steps.version.outputs.version_tag }} build status: ${{ job.status }}",
+              "author": "Build triggered by: ${{ github.event.pull_request.user.login }}"
             }
