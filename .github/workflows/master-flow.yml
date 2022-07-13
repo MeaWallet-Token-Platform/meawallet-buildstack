@@ -134,7 +134,7 @@ jobs:
             JVM_MIN=-Xms1024m
             JVM_MAX=-Xmx2048m
           context: ./
-          platforms: linux/amd64,linux/arm64/v8
+          platforms: linux/amd64
           push: true
           tags: ${{ inputs.registry_name }}/${{ inputs.service_name }}:${{ steps.version.outputs.version_tag }},${{ inputs.registry_name }}/${{ inputs.service_name }}:latest
 
